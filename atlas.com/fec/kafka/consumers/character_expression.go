@@ -1,6 +1,7 @@
 package consumers
 
 import (
+	"atlas-fec/expression"
 	"atlas-fec/kafka/producers"
 	"atlas-fec/rest/requests"
 	"context"
@@ -20,16 +21,15 @@ func CharacterExpressionCreator() EmptyEventCreator {
 
 func HandleCharacterExpression() EventProcessor {
 	return func(l *log.Logger, e interface{}) {
-		if event, ok := e.(characterExpressionEvent); ok {
+		if event, ok := e.(*characterExpressionEvent); ok {
 			character, err := requests.Character().GetCharacterAttributesById(event.CharacterId)
 			if err != nil {
 				l.Printf("[ERROR] %s", err.Error())
 				return
 			}
-
-			producers.CharacterExpressionChanged(l, context.Background()).Emit(event.CharacterId, character.Data().Attributes.MapId, event.Emote)
-
-
+			mapId := character.Data().Attributes.MapId
+			producers.CharacterExpressionChanged(l, context.Background()).Emit(event.CharacterId, mapId, event.Emote)
+			expression.GetCache().Add(event.CharacterId, mapId, 0)
 		} else {
 			l.Printf("[ERROR] unable to cast event provided to handler [CharacterExpressionEvent]")
 		}
