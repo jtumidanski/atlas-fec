@@ -10,7 +10,6 @@ const (
 	charactersService              = baseRequest + charactersServicePrefix
 	charactersResource             = charactersService + "characters"
 	charactersById                 = charactersResource + "/%d"
-	accountCharacters              = charactersService + "?accountId=%d&worldId=%d"
 )
 
 var Character = func() *character {

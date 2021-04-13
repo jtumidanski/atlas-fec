@@ -6,10 +6,6 @@ import (
 )
 
 // ToJSON serializes the given interface into a string based JSON format
-func ToJSON(i interface{}, w io.Writer) error {
-	e := json.NewEncoder(w)
-	return e.Encode(i)
-}
 
 // FromJSON deserializes the object from JSON string
 // in an io.Reader to the given interface
@@ -105,10 +101,6 @@ func mapperFunc(dpf concreteObjectProvider) objectMapper {
 	return func(x objectMap) interface{} {
 		return transformMap(dpf, x)
 	}
-}
-
-func unmarshalData(tf string, dpf concreteObjectProvider) (string, objectMapper) {
-	return tf, mapperFunc(dpf)
 }
 
 // addInclude processes a map structure representing the jsonapi.org data object to produce a concrete struct.

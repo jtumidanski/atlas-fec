@@ -13,7 +13,7 @@ type ExpressionRevert struct {
 	interval time.Duration
 }
 
-func NewExpessionRevert(l *log.Logger, interval time.Duration) *ExpressionRevert {
+func NewExpressionRevert(l *log.Logger, interval time.Duration) *ExpressionRevert {
 	l.Printf("[INFO] initializing expression revert task to run every %dms", interval.Milliseconds())
 	return &ExpressionRevert{l, interval}
 }

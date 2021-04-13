@@ -16,7 +16,7 @@ func main() {
 
 	createEventConsumers(l)
 
-	go tasks.Register(tasks.NewExpessionRevert(l, time.Millisecond*50))
+	go tasks.Register(tasks.NewExpressionRevert(l, time.Millisecond*50))
 
 	// trap sigterm or interrupt and gracefully shutdown the server
 	c := make(chan os.Signal, 1)
