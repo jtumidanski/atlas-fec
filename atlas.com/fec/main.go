@@ -2,9 +2,10 @@ package main
 
 import (
 	"atlas-fec/kafka/consumers"
+	"atlas-fec/logger"
 	tasks "atlas-fec/task"
 	"context"
-	"log"
+	"github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,7 +13,7 @@ import (
 )
 
 func main() {
-	l := log.New(os.Stdout, "fec ", log.LstdFlags|log.Lmicroseconds)
+	l := logger.CreateLogger()
 
 	createEventConsumers(l)
 
@@ -24,10 +25,10 @@ func main() {
 
 	// Block until a signal is received.
 	sig := <-c
-	l.Println("[INFO] shutting down via signal:", sig)
+	l.Infoln("Shutting down via signal:", sig)
 }
 
-func createEventConsumers(l *log.Logger) {
+func createEventConsumers(l *logrus.Logger) {
 	cec := func(topicToken string, emptyEventCreator consumers.EmptyEventCreator, processor consumers.EventProcessor) {
 		createEventConsumer(l, topicToken, emptyEventCreator, processor)
 	}
@@ -35,8 +36,8 @@ func createEventConsumers(l *log.Logger) {
 	cec("TOPIC_CHANGE_MAP_EVENT", consumers.ChangeMapEventCreator(), consumers.HandleChangeMapEvent())
 }
 
-func createEventConsumer(l *log.Logger, topicToken string, emptyEventCreator consumers.EmptyEventCreator, processor consumers.EventProcessor) {
-	h := func(logger *log.Logger, event interface{}) {
+func createEventConsumer(l *logrus.Logger, topicToken string, emptyEventCreator consumers.EmptyEventCreator, processor consumers.EventProcessor) {
+	h := func(logger logrus.FieldLogger, event interface{}) {
 		processor(logger, event)
 	}
 

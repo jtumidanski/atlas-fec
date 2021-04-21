@@ -5,7 +5,7 @@ import (
 	"atlas-fec/kafka/producers"
 	"atlas-fec/rest/requests"
 	"context"
-	"log"
+	"github.com/sirupsen/logrus"
 )
 
 type characterExpressionEvent struct {
@@ -20,18 +20,18 @@ func CharacterExpressionCreator() EmptyEventCreator {
 }
 
 func HandleCharacterExpression() EventProcessor {
-	return func(l *log.Logger, e interface{}) {
+	return func(l logrus.FieldLogger, e interface{}) {
 		if event, ok := e.(*characterExpressionEvent); ok {
 			character, err := requests.Character().GetCharacterAttributesById(event.CharacterId)
 			if err != nil {
-				l.Printf("[ERROR] %s", err.Error())
+				l.WithError(err).Errorf("Unable to locate the character.")
 				return
 			}
 			mapId := character.Data().Attributes.MapId
 			producers.CharacterExpressionChanged(l, context.Background()).Emit(event.CharacterId, mapId, event.Emote)
 			expression.GetCache().Add(event.CharacterId, mapId, 0)
 		} else {
-			l.Printf("[ERROR] unable to cast event provided to handler [CharacterExpressionEvent]")
+			l.Errorf("Unable to cast event provided to handler.")
 		}
 	}
 }

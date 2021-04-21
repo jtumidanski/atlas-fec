@@ -2,7 +2,7 @@ package producers
 
 import (
 	"context"
-	"log"
+	"github.com/sirupsen/logrus"
 )
 
 type characterExpressionChangedEvent struct {
@@ -11,14 +11,14 @@ type characterExpressionChangedEvent struct {
 	Expression  uint32 `json:"expression"`
 }
 
-var CharacterExpressionChanged = func(l *log.Logger, ctx context.Context) *characterExpressionChanged {
+var CharacterExpressionChanged = func(l logrus.FieldLogger, ctx context.Context) *characterExpressionChanged {
 	return &characterExpressionChanged{
 		l, ctx,
 	}
 }
 
 type characterExpressionChanged struct {
-	l   *log.Logger
+	l   logrus.FieldLogger
 	ctx context.Context
 }
 

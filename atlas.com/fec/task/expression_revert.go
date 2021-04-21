@@ -4,17 +4,17 @@ import (
 	"atlas-fec/expression"
 	"atlas-fec/kafka/producers"
 	"context"
-	"log"
+	"github.com/sirupsen/logrus"
 	"time"
 )
 
 type ExpressionRevert struct {
-	l        *log.Logger
+	l        logrus.FieldLogger
 	interval time.Duration
 }
 
-func NewExpressionRevert(l *log.Logger, interval time.Duration) *ExpressionRevert {
-	l.Printf("[INFO] initializing expression revert task to run every %dms", interval.Milliseconds())
+func NewExpressionRevert(l logrus.FieldLogger, interval time.Duration) *ExpressionRevert {
+	l.Infof("Initializing expression revert task to run every %dms", interval.Milliseconds())
 	return &ExpressionRevert{l, interval}
 }
 

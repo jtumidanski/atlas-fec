@@ -2,7 +2,7 @@ package consumers
 
 import (
 	"atlas-fec/expression"
-	"log"
+	"github.com/sirupsen/logrus"
 )
 
 type mapChangedEvent struct {
@@ -20,11 +20,11 @@ func ChangeMapEventCreator() EmptyEventCreator {
 }
 
 func HandleChangeMapEvent() EventProcessor {
-	return func(l *log.Logger, e interface{}) {
+	return func(l logrus.FieldLogger, e interface{}) {
 		if event, ok := e.(*mapChangedEvent); ok {
 			expression.GetCache().Clear(event.CharacterId)
 		} else {
-			l.Printf("[ERROR] unable to cast event provided to handler [MapChangedEvent]")
+			l.Errorf("Unable to cast event provided to handler.")
 		}
 	}
 }
