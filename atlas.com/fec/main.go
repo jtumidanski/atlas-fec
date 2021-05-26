@@ -5,17 +5,21 @@ import (
 	"atlas-fec/logger"
 	tasks "atlas-fec/task"
 	"context"
-	"github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 )
 
 func main() {
 	l := logger.CreateLogger()
+	l.Infoln("Starting main service.")
 
-	createEventConsumers(l)
+	wg := &sync.WaitGroup{}
+	ctx, cancel := context.WithCancel(context.Background())
+
+	consumers.CreateEventConsumers(l, ctx, wg)
 
 	go tasks.Register(tasks.NewExpressionRevert(l, time.Millisecond*50))
 
@@ -25,25 +29,8 @@ func main() {
 
 	// Block until a signal is received.
 	sig := <-c
-	l.Infoln("Shutting down via signal:", sig)
-}
-
-func createEventConsumers(l *logrus.Logger) {
-	cec := func(topicToken string, emptyEventCreator consumers.EmptyEventCreator, processor consumers.EventProcessor) {
-		createEventConsumer(l, topicToken, emptyEventCreator, processor)
-	}
-	cec("CHANGE_FACIAL_EXPRESSION", consumers.CharacterExpressionCreator(), consumers.HandleCharacterExpression())
-	cec("TOPIC_CHANGE_MAP_EVENT", consumers.ChangeMapEventCreator(), consumers.HandleChangeMapEvent())
-}
-
-func createEventConsumer(l *logrus.Logger, topicToken string, emptyEventCreator consumers.EmptyEventCreator, processor consumers.EventProcessor) {
-	h := func(logger logrus.FieldLogger, event interface{}) {
-		processor(logger, event)
-	}
-
-	c := consumers.NewConsumer(l, context.Background(), h,
-		consumers.SetGroupId("Facial Expression Service"),
-		consumers.SetTopicToken(topicToken),
-		consumers.SetEmptyEventCreator(emptyEventCreator))
-	go c.Init()
+	l.Infof("Initiating shutdown with signal %s.", sig)
+	cancel()
+	wg.Wait()
+	l.Infoln("Service shutdown.")
 }

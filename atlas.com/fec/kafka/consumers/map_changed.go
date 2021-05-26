@@ -2,6 +2,7 @@ package consumers
 
 import (
 	"atlas-fec/expression"
+	"atlas-fec/kafka/handler"
 	"github.com/sirupsen/logrus"
 )
 
@@ -13,13 +14,13 @@ type mapChangedEvent struct {
 	CharacterId uint32 `json:"characterId"`
 }
 
-func ChangeMapEventCreator() EmptyEventCreator {
+func ChangeMapEventCreator() handler.EmptyEventCreator {
 	return func() interface{} {
 		return &mapChangedEvent{}
 	}
 }
 
-func HandleChangeMapEvent() EventProcessor {
+func HandleChangeMapEvent() handler.EventHandler {
 	return func(l logrus.FieldLogger, e interface{}) {
 		if event, ok := e.(*mapChangedEvent); ok {
 			expression.GetCache().Clear(event.CharacterId)

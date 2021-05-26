@@ -3,7 +3,6 @@ package tasks
 import (
 	"atlas-fec/expression"
 	"atlas-fec/kafka/producers"
-	"context"
 	"github.com/sirupsen/logrus"
 	"time"
 )
@@ -20,7 +19,7 @@ func NewExpressionRevert(l logrus.FieldLogger, interval time.Duration) *Expressi
 
 func (e *ExpressionRevert) Run() {
 	for _, exp := range expression.GetCache().PopExpired() {
-		producers.CharacterExpressionChanged(e.l, context.Background()).Emit(exp.CharacterId(), exp.MapId(), exp.Expression())
+		producers.CharacterExpressionChanged(e.l)(exp.CharacterId(), exp.MapId(), exp.Expression())
 	}
 }
 

@@ -1,7 +1,6 @@
 package producers
 
 import (
-	"context"
 	"github.com/sirupsen/logrus"
 )
 
@@ -11,18 +10,10 @@ type characterExpressionChangedEvent struct {
 	Expression  uint32 `json:"expression"`
 }
 
-var CharacterExpressionChanged = func(l logrus.FieldLogger, ctx context.Context) *characterExpressionChanged {
-	return &characterExpressionChanged{
-		l, ctx,
+func CharacterExpressionChanged(l logrus.FieldLogger) func(characterId uint32, mapId uint32, expression uint32) {
+	producer := ProduceEvent(l, "EXPRESSION_CHANGED")
+	return func(characterId uint32, mapId uint32, expression uint32) {
+		event := &characterExpressionChangedEvent{CharacterId: characterId, MapId: mapId, Expression: expression}
+		producer(CreateKey(int(characterId)), event)
 	}
-}
-
-type characterExpressionChanged struct {
-	l   logrus.FieldLogger
-	ctx context.Context
-}
-
-func (c *characterExpressionChanged) Emit(characterId uint32, mapId uint32, expression uint32) {
-	event := &characterExpressionChangedEvent{CharacterId: characterId, MapId: mapId, Expression: expression}
-	produceEvent(c.l, "EXPRESSION_CHANGED", createKey(int(characterId)), event)
 }
