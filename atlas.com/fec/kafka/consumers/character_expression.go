@@ -1,10 +1,10 @@
 package consumers
 
 import (
+	"atlas-fec/character"
 	"atlas-fec/expression"
 	"atlas-fec/kafka/handler"
 	"atlas-fec/kafka/producers"
-	"atlas-fec/rest/requests"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,12 +22,7 @@ func CharacterExpressionCreator() handler.EmptyEventCreator {
 func HandleCharacterExpression() handler.EventHandler {
 	return func(l logrus.FieldLogger, e interface{}) {
 		if event, ok := e.(*characterExpressionEvent); ok {
-			character, err := requests.Character().GetCharacterAttributesById(event.CharacterId)
-			if err != nil {
-				l.WithError(err).Errorf("Unable to locate the character.")
-				return
-			}
-			mapId := character.Data().Attributes.MapId
+			mapId := character.GetMap(l)(event.CharacterId)
 			producers.CharacterExpressionChanged(l)(event.CharacterId, mapId, event.Emote)
 			expression.GetCache().Add(event.CharacterId, mapId, 0)
 		} else {
