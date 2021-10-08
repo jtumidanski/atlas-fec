@@ -3,9 +3,12 @@ package tasks
 import (
 	"atlas-fec/expression"
 	"atlas-fec/kafka/producers"
+	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"time"
 )
+
+const ExpressionRevertTask = "expression_revert_task"
 
 type ExpressionRevert struct {
 	l        logrus.FieldLogger
@@ -18,9 +21,11 @@ func NewExpressionRevert(l logrus.FieldLogger, interval time.Duration) *Expressi
 }
 
 func (e *ExpressionRevert) Run() {
+	span := opentracing.StartSpan(ExpressionRevertTask)
 	for _, exp := range expression.GetCache().PopExpired() {
-		producers.CharacterExpressionChanged(e.l)(exp.CharacterId(), exp.MapId(), exp.Expression())
+		producers.CharacterExpressionChanged(e.l, span)(exp.CharacterId(), exp.MapId(), exp.Expression())
 	}
+	span.Finish()
 }
 
 func (e *ExpressionRevert) SleepTime() time.Duration {

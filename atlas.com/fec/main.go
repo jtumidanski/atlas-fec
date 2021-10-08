@@ -4,7 +4,9 @@ import (
 	"atlas-fec/kafka/consumers"
 	"atlas-fec/logger"
 	tasks "atlas-fec/task"
+	"atlas-fec/tracing"
 	"context"
+	"io"
 	"os"
 	"os/signal"
 	"sync"
@@ -12,12 +14,25 @@ import (
 	"time"
 )
 
+const serviceName = "atlas-fec"
+
 func main() {
 	l := logger.CreateLogger()
 	l.Infoln("Starting main service.")
 
 	wg := &sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())
+
+	tc, err := tracing.InitTracer(l)(serviceName)
+	if err != nil {
+		l.WithError(err).Fatal("Unable to initialize tracer.")
+	}
+	defer func(tc io.Closer) {
+		err := tc.Close()
+		if err != nil {
+			l.WithError(err).Errorf("Unable to close tracer.")
+		}
+	}(tc)
 
 	consumers.CreateEventConsumers(l, ctx, wg)
 

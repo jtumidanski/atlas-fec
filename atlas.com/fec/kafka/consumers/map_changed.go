@@ -3,6 +3,7 @@ package consumers
 import (
 	"atlas-fec/expression"
 	"atlas-fec/kafka/handler"
+	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,7 +22,7 @@ func ChangeMapEventCreator() handler.EmptyEventCreator {
 }
 
 func HandleChangeMapEvent() handler.EventHandler {
-	return func(l logrus.FieldLogger, e interface{}) {
+	return func(l logrus.FieldLogger, span opentracing.Span, e interface{}) {
 		if event, ok := e.(*mapChangedEvent); ok {
 			expression.GetCache().Clear(event.CharacterId)
 		} else {
