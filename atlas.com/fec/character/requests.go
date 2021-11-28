@@ -14,9 +14,9 @@ const (
 	charactersById                 = charactersResource + "/%d"
 )
 
-func requestById(l logrus.FieldLogger, span opentracing.Span) func(characterId uint32) (*DataContainer, error) {
-	return func(characterId uint32) (*DataContainer, error) {
-		ar := &DataContainer{}
+func requestById(l logrus.FieldLogger, span opentracing.Span) func(characterId uint32) (*dataContainer, error) {
+	return func(characterId uint32) (*dataContainer, error) {
+		ar := &dataContainer{}
 		err := requests.Get(l, span)(fmt.Sprintf(charactersById, characterId), ar)
 		if err != nil {
 			return nil, err

@@ -1,18 +1,22 @@
 package character
 
-import "atlas-fec/rest/response"
+import (
+	"atlas-fec/rest/response"
+	"encoding/json"
+)
 
-type DataContainer struct {
-	data response.DataSegment
+type dataContainer struct {
+	data     response.DataSegment
+	included response.DataSegment
 }
 
-type DataBody struct {
+type dataBody struct {
 	Id         string     `json:"id"`
 	Type       string     `json:"type"`
-	Attributes Attributes `json:"attributes"`
+	Attributes attributes `json:"attributes"`
 }
 
-type Attributes struct {
+type attributes struct {
 	AccountId          uint32 `json:"accountId"`
 	WorldId            byte   `json:"worldId"`
 	Name               string `json:"name"`
@@ -45,7 +49,20 @@ type Attributes struct {
 	Stance             byte   `json:"stance"`
 }
 
-func (c *DataContainer) UnmarshalJSON(data []byte) error {
+func (c *dataContainer) MarshalJSON() ([]byte, error) {
+	t := struct {
+		Data     interface{} `json:"data"`
+		Included interface{} `json:"included"`
+	}{}
+	if len(c.data) == 1 {
+		t.Data = c.data[0]
+	} else {
+		t.Data = c.data
+	}
+	return json.Marshal(t)
+}
+
+func (c *dataContainer) UnmarshalJSON(data []byte) error {
 	d, _, err := response.UnmarshalRoot(data, response.MapperFunc(EmptyCharacterAttributesData))
 	if err != nil {
 		return err
@@ -54,21 +71,21 @@ func (c *DataContainer) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (c *DataContainer) Data() *DataBody {
+func (c *dataContainer) Data() *dataBody {
 	if len(c.data) >= 1 {
-		return c.data[0].(*DataBody)
+		return c.data[0].(*dataBody)
 	}
 	return nil
 }
 
-func (c *DataContainer) DataList() []DataBody {
-	var r = make([]DataBody, 0)
+func (c *dataContainer) DataList() []dataBody {
+	var r = make([]dataBody, 0)
 	for _, x := range c.data {
-		r = append(r, *x.(*DataBody))
+		r = append(r, *x.(*dataBody))
 	}
 	return r
 }
 
 func EmptyCharacterAttributesData() interface{} {
-	return &DataBody{}
+	return &dataBody{}
 }
