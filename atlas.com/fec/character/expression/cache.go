@@ -13,7 +13,7 @@ type cache struct {
 var c *cache
 var once sync.Once
 
-func GetCache() *cache {
+func getCache() *cache {
 	once.Do(func() {
 		c = &cache{
 			mutex:    sync.Mutex{},
@@ -23,7 +23,7 @@ func GetCache() *cache {
 	return c
 }
 
-func (c2 *cache) Add(characterId uint32, mapId uint32, expression uint32) *Model {
+func (c2 *cache) add(characterId uint32, mapId uint32, expression uint32) *Model {
 	expiration := time.Now().Add(time.Second * time.Duration(5))
 	c2.mutex.Lock()
 	e := &Model{
@@ -37,7 +37,7 @@ func (c2 *cache) Add(characterId uint32, mapId uint32, expression uint32) *Model
 	return e
 }
 
-func (c2 *cache) PopExpired() []*Model {
+func (c2 *cache) popExpired() []*Model {
 	es := make([]*Model, 0)
 	c2.mutex.Lock()
 	now := time.Now()
@@ -51,7 +51,7 @@ func (c2 *cache) PopExpired() []*Model {
 	return es
 }
 
-func (c2 *cache) Clear(characterId uint32) {
+func (c2 *cache) clear(characterId uint32) {
 	c2.mutex.Lock()
 	delete(c2.routines, characterId)
 	c2.mutex.Unlock()

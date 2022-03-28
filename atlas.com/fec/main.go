@@ -1,7 +1,9 @@
 package main
 
 import (
-	"atlas-fec/kafka/consumers"
+	"atlas-fec/character"
+	"atlas-fec/character/expression"
+	"atlas-fec/kafka"
 	"atlas-fec/logger"
 	tasks "atlas-fec/task"
 	"atlas-fec/tracing"
@@ -15,6 +17,7 @@ import (
 )
 
 const serviceName = "atlas-fec"
+const consumerGroupId = "Facial Expression Service"
 
 func main() {
 	l := logger.CreateLogger(serviceName)
@@ -34,9 +37,11 @@ func main() {
 		}
 	}(tc)
 
-	consumers.CreateEventConsumers(l, ctx, wg)
+	kafka.CreateConsumers(l, ctx, wg,
+		character.ChangeFacialExpressionConsumer(consumerGroupId),
+		character.MapChangedConsumer(consumerGroupId))
 
-	go tasks.Register(tasks.NewExpressionRevert(l, time.Millisecond*50))
+	go tasks.Register(expression.NewRevertTask(l, time.Millisecond*50))
 
 	// trap sigterm or interrupt and gracefully shutdown the server
 	c := make(chan os.Signal, 1)
