@@ -25,7 +25,11 @@ type expressionEvent struct {
 
 func handleCharacterExpression() kafka.HandlerFunc[expressionEvent] {
 	return func(l logrus.FieldLogger, span opentracing.Span, event expressionEvent) {
-		mapId := GetMap(l, span)(event.CharacterId)
+		mapId, err := GetMap(l, span)(event.CharacterId)
+		if err != nil {
+			l.WithError(err).Errorf("Unable to retrieve map for character %d using emote.", event.CharacterId)
+			return
+		}
 		expression.Change(l, span)(event.CharacterId, mapId, event.Emote)
 	}
 }
